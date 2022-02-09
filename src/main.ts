@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import Widget from './Widget.vue'
+import App from './App.vue'
 import router from './router'
 
-createApp(Widget).use(router).mount('#cruise-app')
+createApp(App).use(router).mount('#cruise-app')

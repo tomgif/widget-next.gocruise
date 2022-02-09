@@ -1,0 +1,70 @@
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+html {
+    box-sizing: border-box;
+}
+
+body {
+    font-size: 16px;
+    color: #000;
+    background-color: #fafafa;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.page-container {
+    width: 1040px;
+    margin: 0 auto;
+}
+
+.cruise-search {
+    border-top: 1px solid #eee;
+}
+
+.cruise-search__title {
+    margin: 4px 0;
+    font-weight: 400;
+    font-size: 24px;
+    line-height: 36px;
+    color: #000;
+    text-transform: uppercase;
+    text-align: center;
+    letter-spacing: 2.5px;
+    padding: 48px 0;
+}
+
+.header {
+    height: 4rem;
+    background-color: #255cab;
+}
+
+.main-logo {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+    height: 4rem;
+}
+
+.header__logo--pac {
+    width: 120px;
+    height: 40px;
+}
+
+.header__logo--msc {
+    width: 72px;
+    height: 30px;
+}
+
+.header__separator {
+    width: 1px;
+    height: 3rem;
+    background-color: #fff;
+    margin: auto 13px;
+}
+
+.header__content {
+    display: flex;
+}

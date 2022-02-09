@@ -1,5 +1,5 @@
 {
-  "name": "widget-next.pac.local",
+  "name": "widget-next.gocruise",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,6 +9,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@vueuse/core": "^7.6.1",
     "core-js": "^3.8.3",
     "vue": "^3.2.13",
     "vue-router": "^4.0.3"
@@ -19,6 +20,7 @@
     "@cypress/code-coverage": "^3.9.12",
     "@cypress/vue": "3",
     "@cypress/webpack-dev-server": "^1.7.0",
+    "@types/lodash": "^4.14.178",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
     "@vue/cli-plugin-babel": "~5.0.0-rc.2",
@@ -33,6 +35,8 @@
     "eslint": "^7.32.0",
     "eslint-plugin-cypress": "^2.12.1",
     "eslint-plugin-vue": "^8.0.3",
+    "lodash": "^4.17.21",
+    "query-string": "^7.1.1",
     "sass": "^1.32.7",
     "sass-loader": "^12.0.0",
     "typescript": "~4.1.5"

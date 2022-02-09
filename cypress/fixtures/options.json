@@ -1,0 +1,88 @@
+{
+  "ships": [
+    {
+      "id": 1,
+      "title": "MSC Musica"
+    },
+    {
+      "id": 2,
+      "title": "MSC Orchestra"
+    },
+    {
+      "id": 3,
+      "title": "MSC Armonia"
+    },
+    {
+      "id": 4,
+      "title": "MSC Poesia"
+    },
+    {
+      "id": 5,
+      "title": "MSC Fantasia"
+    },
+    {
+      "id": 6,
+      "title": "MSC Splendida"
+    },
+    {
+      "id": 7,
+      "title": "MSC Magnifica"
+    },
+    {
+      "id": 8,
+      "title": "MSC Divina"
+    },
+    {
+      "id": 9,
+      "title": "MSC Preziosa"
+    },
+    {
+      "id": 10,
+      "title": "MSC Sinfonia"
+    },
+    {
+      "id": 11,
+      "title": "MSC Lirica"
+    },
+    {
+      "id": 12,
+      "title": "MSC Opera"
+    },
+    {
+      "id": 13,
+      "title": "MSC Meraviglia"
+    },
+    {
+      "id": 14,
+      "title": "MSC Seaside"
+    },
+    {
+      "id": 15,
+      "title": "MSC Seaview"
+    },
+    {
+      "id": 16,
+      "title": "MSC Bellissima"
+    },
+    {
+      "id": 17,
+      "title": "MSC Grandiosa"
+    },
+    {
+      "id": 18,
+      "title": "MSC Virtuosa"
+    },
+    {
+      "id": 19,
+      "title": "MSC Seashore"
+    },
+    {
+      "id": 20,
+      "title": "MSC World Europa"
+    },
+    {
+      "id": 21,
+      "title": "MSC Seascape"
+    }
+  ]
+}

@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 import ErrorHandling from './components/ErrorHandling.vue'
+import WidgetWrapper from './WidgetWrapper.vue'
 </script>
 
 <template>
   <suspense>
     <template #default>
-      <router-view></router-view>
+      <WidgetWrapper></WidgetWrapper>
     </template>
     <template #fallback>
       <ErrorHandling></ErrorHandling>

@@ -1,17 +1,53 @@
 <!DOCTYPE html>
-<html lang="">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
-    <title><%= htmlWebpackPlugin.options.title %></title>
-  </head>
-  <body>
-    <noscript>
-      <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
-    </noscript>
-    <div id="cruise-app"></div>
-    <!-- built files will be auto injected -->
-  </body>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+  <title><%= htmlWebpackPlugin.options.title %></title>
+  <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="./assets/css/normalize.css">
+  <link rel="stylesheet" href="./assets/css/skeleton.css">
+  <link rel="stylesheet" href="./assets/css/style.css">
+</head>
+<body>
+<noscript>
+  <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled.
+    Please enable it to continue.</strong>
+</noscript>
+
+<div class="header">
+  <div class="container">
+    <div class="header__content">
+      <div class="main-logo">
+        <div class="header__logo header__logo--pac">
+          <img src="./assets/images/logo-pac.svg" alt="PAC Group">
+        </div>
+
+        <div class="header__separator"></div>
+
+        <div class="header__logo header__logo--msc">
+          <img src="./assets/images/logo-msc.svg" alt="MSC Cruises">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main class="main">
+  <div class="container">
+    <div class="column">
+      <section class="cruise-search">
+        <div class="cruise-search__title">
+          Поиск и бронирование круизов
+        </div>
+
+        <div class="cruise-search__content">
+          <div id="cruise-app"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+</body>
 </html>
