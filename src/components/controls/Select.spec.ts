@@ -1,8 +1,8 @@
 import {mount} from '@cypress/vue'
-import ControlSelect from '../components/ControlSelect.vue'
-import options from '../../cypress/fixtures/options.json'
+import Select from './Select.vue'
+import options from '../../../cypress/fixtures/options.json'
 
-describe('ControlSelect', () => {
+describe('Select', () => {
   const componentOptions = {
     propsData: {
       options: options.ships,
@@ -15,7 +15,7 @@ describe('ControlSelect', () => {
   }
   
   it('open/close options', () => {
-    mount(ControlSelect, componentOptions)
+    mount(Select, componentOptions)
     cy.get('.select__value').click()
     cy.get('.select__options').should('exist')
     cy.get('.select__value').click()
@@ -23,7 +23,7 @@ describe('ControlSelect', () => {
   })
   
   it('close on click outside', () => {
-    mount(ControlSelect, componentOptions)
+    mount(Select, componentOptions)
     cy.get('.select__value').click()
     cy.get('body').click()
     cy.get('select_value').should('not.exist')

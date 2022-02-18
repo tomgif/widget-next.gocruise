@@ -1,4 +1,4 @@
-/// <reference types="cypress" />
+/// <reference types='cypress' />
 // ***********************************************************
 // This example plugins/index.js can be used to load plugins
 //
@@ -20,10 +20,10 @@ const webpackConfig = require('@vue/cli-service/webpack.config')
  */
 // eslint-disable-next-line no-unused-vars
 module.exports = (on, config) => {
-  on('dev-server:start', (options) => {
+  on('dev-server:start', options => {
     return startDevServer({
       options,
-      webpackConfig,
+      webpackConfig
     })
   })
 
