@@ -15,6 +15,7 @@
     "dayjs": "^1.10.7",
     "js-datepicker": "^5.18.0",
     "vue": "^3.2.13",
+    "vue-imask": "^6.4.2",
     "vue-router": "^4.0.3"
   },
   "devDependencies": {

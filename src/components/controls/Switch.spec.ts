@@ -2,10 +2,9 @@ import {mount} from '@cypress/vue'
 import Switch from './Switch.vue'
 import {ref} from 'vue'
 
-describe('Switch', () => {
+describe('Switch', (): void => {
   const modelValue = ref<boolean>(false)
-  
-  const options = {
+  const componentOptions = {
     propsData: {
       modelValue,
       disabled: false,
@@ -18,22 +17,22 @@ describe('Switch', () => {
     }
   }
   
-  it('renders a label', () => {
-    mount(Switch, options)
+  it('отображение слота с подписью поля', (): void => {
+    mount(Switch, componentOptions)
     cy.get('.switch__label').should('exist')
   })
   
-  it('turns on/off switch', () => {
-    mount(Switch, options)
+  it('включение/выключение переключателя', (): void => {
+    mount(Switch, componentOptions)
     cy.get('.switch__button_on').should('not.exist')
     cy.get('.switch__cavity').click()
     cy.get('.switch__button_on').should('exist')
   })
   
-  it('disable switch', () => {
+  it('блокирование переключателия', (): void => {
     modelValue.value = false
-    options.propsData.disabled = true
-    mount(Switch, options)
+    componentOptions.propsData.disabled = true
+    mount(Switch, componentOptions)
     cy.get('.switch__button_on').should('not.exist')
     cy.get('.switch__cavity').click()
     cy.get('.switch__button_on').should('not.exist')

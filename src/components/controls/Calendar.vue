@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import {defineProps, withDefaults, ref, computed, onMounted, unref, defineEmits} from 'vue'
+import {defineProps, withDefaults, ref, computed, onMounted, unref, defineEmits, watch} from 'vue'
 
 const props = withDefaults(defineProps<{
-  modelValue?: Date | null,
+  modelValue: Date,
   weekDaysNames?: Array<string>,
   monthsNames?: Array<string>,
   events?: Array<Date>,
@@ -14,15 +14,14 @@ const props = withDefaults(defineProps<{
   showAllDates?: boolean,
   showWeekDays?: boolean,
 }>(), {
-  modelValue: null,
-  weekDaysNames: () => (['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']),
+  weekDaysNames: () => (['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']),
   monthsNames: () => (['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август',
     'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']),
   events: () => ([]),
   minDate: null,
   maxDate: null,
-  weekendIndices: () => ([0, 6]),
-  startDay: 0,
+  weekendIndices: () => ([5, 6]),
+  startDay: 1,
   showAllDates: false,
   showWeekDays: false
 })
@@ -58,14 +57,14 @@ type getDayClassNameFunc = (day: CalendarDay) => { [key: string]: boolean }
 
 const getDayClassName: getDayClassNameFunc = day => {
   return {
-    'qs-outside-current-month': day.outside,
+    'calendar__unit_outside': day.outside,
     'calendar__unit_current': day.current,
-    'qs-event': day.event,
+    'calendar__unit_event': day.event,
     'calendar__unit_active': day.selected,
-    'qs-weekend': day.weekend,
-    [`qs-day-${day.weekday}`]: true,
+    'calendar__unit_weekend': day.weekend,
+    [`calendar__unit_position_${day.weekday}`]: true,
     'calendar__unit_disabled': day.disabled,
-    'qs-empty': day.empty
+    'calendar__unit_empty': day.empty
   }
 }
 
@@ -91,6 +90,10 @@ const startDate = computed<Date>(() => {
 const currentDate = ref<Date>(startDate.value)
 const currentMonthName = computed<string>(() => {
   return props.monthsNames[currentDate.value.getMonth()]
+})
+
+watch((): Date => props.modelValue, (fresh: Date): void => {
+  currentDate.value = new Date(fresh)
 })
 
 const events = computed<Array<number>>(() => {
@@ -147,26 +150,28 @@ const onClick = (day: CalendarDay): void => {
     emit('update:modelValue', day.date)
   }
 }
+
+const hasPrev = computed(() => currentDate.value.getMonth() !== props.minDate?.getMonth())
 </script>
 
 <template>
   <div class="calendar">
-    <div class="calendar__controls">
-      <div class="calendar__arrow calendar__arrow_position_prev" @click="setMonth(-1)"></div>
+    <div class="calendar__header">
+      <div class="calendar__arrow calendar__arrow_position_prev" @click="setMonth(-1)" v-if="hasPrev"></div>
       <div class="calendar__title">
         <span class="calendar__month" v-text="currentMonthName"></span>
         <span class="calendar__year" v-text="currentDate.getFullYear()"></span>
       </div>
       <div class="calendar__arrow calendar__arrow_position_next" @click="setMonth()"></div>
     </div>
-    <div class="qs-squares">
-      <div class="qs-week-days" v-if="!props.showWeekDays">
-        <div class="calendar__unit qs-day"
+    <div class="calendar__body">
+      <div class="calendar__week" v-if="!props.showWeekDays">
+        <div class="calendar__unit calendar__unit_weekday"
              v-for="weekDay in weekDays"
              :key="`weekday-${weekDay}`"
              v-text="weekDaysNames[weekDay]"></div>
       </div>
-      <div class="qs-days">
+      <div class="calendar__units">
         <div class="calendar__unit"
              :class="getDayClassName(day)"
              v-for="day in days"
@@ -187,16 +192,27 @@ const onClick = (day: CalendarDay): void => {
   flex-direction: column;
   z-index: 10;
   user-select: none;
-  overflow: hidden;
   background-color: #fff;
   width: 186px;
   padding: 0 2px 5px;
   box-shadow: 0 4px 20px rgb(0 0 0 / 45%);
 
-  &__controls {
+  &:before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 67px;
+    width: 0;
+    height: 5px;
+    display: block;
+    border-style: solid;
+    border-width: 0 5px 5px;
+    border-color: transparent transparent #fff;
+  }
+
+  &__header {
     position: relative;
     height: 37px;
-    width: 100%;
     padding: 0 32px;
     margin: 4px 0;
     border-bottom: 1px solid #eee;
@@ -219,8 +235,16 @@ const onClick = (day: CalendarDay): void => {
     top: 0;
     height: 32px;
     width: 32px;
+    border-radius: 50%;
     position: absolute;
     cursor: pointer;
+    background-color: #fff;
+    will-change: background-color;
+    transition: background-color .3s ease;
+
+    &:hover {
+      background-color: #e5e5e5;
+    }
 
     &:before {
       text-align: center;
@@ -228,6 +252,10 @@ const onClick = (day: CalendarDay): void => {
       display: block;
       width: 32px;
       height: 32px;
+      mask-repeat: no-repeat;
+      mask-size: 16px 16px;
+      mask-position: center center;
+      background-color: #ff9b25;
     }
 
     &_position {
@@ -235,17 +263,32 @@ const onClick = (day: CalendarDay): void => {
         left: 0;
 
         &:before {
-          content: '<'
+          content: '';
+          mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xml:space='preserve' viewBox='0 0 512 512'%3E%3Cpath d='M352 128.4 319.7 96 160 256l159.7 160 32.3-32.4L224.7 256z'/%3E%3C/svg%3E");
         }
       }
 
       &_next {
         right: 0;
+
         &:before {
-          content: '>'
+          content: '';
+          mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xml:space='preserve' viewBox='0 0 512 512'%3E%3Cpath d='M160 128.4 192.3 96 352 256 192.3 416 160 383.6 287.3 256z'/%3E%3C/svg%3E");
         }
       }
     }
+  }
+
+  &__body, &__week, &__units {
+    display: flex;
+  }
+
+  &__body {
+    flex-flow: column;
+  }
+
+  &__week, &__units {
+    flex-wrap: wrap;
   }
 
   &__unit {
@@ -254,17 +297,20 @@ const onClick = (day: CalendarDay): void => {
     font-size: 12px;
     text-align: center;
     line-height: 26px;
-/*
-    &:not(.qs-empty):not(.qs-disabled):not(.qs-day):not(.qs-active) {
+    border-radius: 50%;
+    background-color: #fff;
+    will-change: background-color;
+    transition: background-color .3s ease;
+
+    &:not(&_active):not(&_disabled):not(&_outside):not(&_weekday) {
       &:hover {
-        background: orange;
+        background-color: #e5e5e5;
       }
-    }*/
+    }
 
     &_active {
-      background: #2e2e2e;
+      background-color: #2e2e2e;
       color: #fff;
-      border-radius: 50%;
     }
 
     &_current {
@@ -275,38 +321,18 @@ const onClick = (day: CalendarDay): void => {
       color: #90a4ae;
     }
 
-    &:not(&_disabled) {
+    &:not(&_disabled):not(&_empty):not(&_weekday) {
       cursor: pointer;
     }
+
+    &_weekend:not(&_disabled) {
+      color: #c91313
+    }
+
+    &_event {
+      font-weight: bold;
+      text-decoration: underline;
+    }
   }
-}
-
-.qs-month {
-  padding-right: .5ex;
-}
-
-.qs-year {
-  padding-left: .5ex;
-}
-
-.qs-squares {
-  display: flex;
-  flex-flow: column;
-}
-
-.qs-days, .qs-week-days {
-  display: flex;
-  flex-wrap: wrap;
-  width: 182px;
-}
-
-.qs-day {
-  cursor: default;
-  font-weight: bold;
-  color: gray;
-}
-
-.qs-event {
-  position: relative;
 }
 </style>
