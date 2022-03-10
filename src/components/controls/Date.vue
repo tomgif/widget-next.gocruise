@@ -1,5 +1,9 @@
 <script lang="ts" setup>
-import {defineProps, withDefaults, defineEmits, useSlots, ref, computed, watch} from 'vue'
+/**
+ * TODO: hide calendar on selected date
+ */
+import {defineProps, withDefaults, defineEmits, useSlots, watch} from 'vue'
+import {$ref, $computed, $$} from 'vue/macros'
 import Calendar from './Calendar.vue'
 import {onClickOutside} from '@vueuse/core'
 import Cleave from 'cleave.js'
@@ -28,7 +32,7 @@ const emit = defineEmits<{
 const slots = useSlots()
 const hasSlot = (name: string): boolean => !!slots[name]
 
-const selected = computed({
+let selected = $computed({
   get: (): Date => dayjs(props.modelValue, props.format).toDate(),
   set: (value: Date) => {
     const date = dayjs(value).format(props.format)
@@ -36,19 +40,19 @@ const selected = computed({
   }
 })
 
-const active = ref<boolean>(false) // show datepicker
-const date = ref(null) // component container
+let active = $ref<boolean>(false) // show datepicker
+let date = $ref<HTMLElement | null>(null) // component container
 
-onClickOutside(date, (): void => {
-  active.value = false
+onClickOutside($$(date), (): void => {
+  active = false
 })
 
-const input = ref<HTMLInputElement | null>(null)
-watch((): boolean => active.value, (fresh: boolean): void => {
-  if (fresh) input.value?.focus()
+let input = $ref<HTMLInputElement | null>(null)
+watch((): boolean => active, (fresh: boolean): void => {
+  if (fresh) input?.focus()
 })
 
-const selectedValue = computed({
+let selectedValue = $computed({
   get: (): string => dayjs(props.modelValue).format(props.formatLocal),
   set: (value: string) => {
     const date = dayjs(value, props.formatLocal)
@@ -60,7 +64,7 @@ const selectedValue = computed({
   }
 })
 
-const mask = ref<Cleave | null>(null)
+let mask = $ref<Cleave | null>(null)
 const keyPressHandler = (event: KeyboardEvent) => {
   const input = event.target as HTMLInputElement
   const position: number = input.selectionStart as number
@@ -70,13 +74,13 @@ const keyPressHandler = (event: KeyboardEvent) => {
 }
 
 const vMask = {
-  mounted: (input: HTMLInputElement, bindings: { value: CleaveOptions }) => {
-    mask.value = new Cleave(input, bindings.value)
+  created: (input: HTMLInputElement, bindings: { value: CleaveOptions }) => {
+    mask = new Cleave(input, bindings.value)
     input.addEventListener('keypress', keyPressHandler)
   },
   unmounted: (input: HTMLInputElement) => {
     input.removeEventListener('keypress', keyPressHandler)
-    mask.value?.destroy()
+    mask?.destroy()
   }
 }
 
@@ -86,7 +90,7 @@ const vMaskOptions = {
   dateMin: dayjs(props.minDate).format(props.format)
 }
 
-const over = ref<boolean>(false)
+let over = $ref<boolean>(false)
 </script>
 
 <template>
@@ -131,6 +135,7 @@ const over = ref<boolean>(false)
 
   &__control {
     background-color: #fff;
+    border-radius: 2px;
     color: #000;
     border: 0;
     width: 83px;
@@ -145,7 +150,7 @@ const over = ref<boolean>(false)
     transition: outline-color .3s ease;
 
     &_hover {
-      outline: 1px solid black;
+      outline: 1px solid #ff9b25;
     }
   }
 
@@ -158,6 +163,7 @@ const over = ref<boolean>(false)
   &__value {
     margin-top: 13px;
     position: relative;
+    border-radius: 2px;
   }
 
   &__button {
@@ -178,7 +184,7 @@ const over = ref<boolean>(false)
       left: 6px;
       width: 11px;
       height: 9px;
-      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='xMidYMid' viewBox='0 0 10.656 8.656'%3E%3Cpath fill-rule='evenodd' d='M.665 8.01V6.671h1.33V8.01H.665zm0-1.999V4.672h1.33v1.339H.665zM2.664 8.01V6.671h1.33V8.01h-1.33zm0-1.999V4.672h1.33v1.339h-1.33zM.665 4.012V2.673h1.33v1.339H.665zM4.663 8.01V6.671h1.33V8.01h-1.33zm0-1.999V4.672h1.33v1.339h-1.33zM2.664 4.012V2.673h1.33v1.339h-1.33zM6.662 8.01V6.671h1.329V8.01H6.662zm0-1.999V4.672h1.329v1.339H6.662zM4.663 4.012V2.673h1.33v1.339h-1.33zM8.661 8.01V6.671H9.99V8.01H8.661zm0-1.999V4.672H9.99v1.339H8.661zM6.662 4.012V2.673h1.329v1.339H6.662zm1.999 0V2.673H9.99v1.339H8.661zm1.999-2.668c0-.37-.3-.67-.67-.67H8.321v.67H6.322v-.67H4.323v.67H2.325v-.67H.665a.67.67 0 0 0-.669.67V8.01c0 .37.3.66.669.66H9.99c.37 0 .67-.29.67-.66V1.344zM3.994.014h-1.33v1h1.33v-1zm3.997 0H6.662v1h1.329v-1z'/%3E%3C/svg%3E");
+      mask-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHByZXNlcnZlQXNwZWN0UmF0aW89InhNaWRZTWlkIiB2aWV3Qm94PSIwIDAgMTAuNjU2IDguNjU2Ij48cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0uNjY1IDguMDFWNi42NzFoMS4zM1Y4LjAxSC42NjV6bTAtMS45OTlWNC42NzJoMS4zM3YxLjMzOUguNjY1ek0yLjY2NCA4LjAxVjYuNjcxaDEuMzNWOC4wMWgtMS4zM3ptMC0xLjk5OVY0LjY3MmgxLjMzdjEuMzM5aC0xLjMzek0uNjY1IDQuMDEyVjIuNjczaDEuMzN2MS4zMzlILjY2NXpNNC42NjMgOC4wMVY2LjY3MWgxLjMzVjguMDFoLTEuMzN6bTAtMS45OTlWNC42NzJoMS4zM3YxLjMzOWgtMS4zM3pNMi42NjQgNC4wMTJWMi42NzNoMS4zM3YxLjMzOWgtMS4zM3pNNi42NjIgOC4wMVY2LjY3MWgxLjMyOVY4LjAxSDYuNjYyem0wLTEuOTk5VjQuNjcyaDEuMzI5djEuMzM5SDYuNjYyek00LjY2MyA0LjAxMlYyLjY3M2gxLjMzdjEuMzM5aC0xLjMzek04LjY2MSA4LjAxVjYuNjcxSDkuOTlWOC4wMUg4LjY2MXptMC0xLjk5OVY0LjY3Mkg5Ljk5djEuMzM5SDguNjYxek02LjY2MiA0LjAxMlYyLjY3M2gxLjMyOXYxLjMzOUg2LjY2MnptMS45OTkgMFYyLjY3M0g5Ljk5djEuMzM5SDguNjYxem0xLjk5OS0yLjY2OGMwLS4zNy0uMy0uNjctLjY3LS42N0g4LjMyMXYuNjdINi4zMjJ2LS42N0g0LjMyM3YuNjdIMi4zMjV2LS42N0guNjY1YS42Ny42NyAwIDAgMC0uNjY5LjY3VjguMDFjMCAuMzcuMy42Ni42NjkuNjZIOS45OWMuMzcgMCAuNjctLjI5LjY3LS42NlYxLjM0NHpNMy45OTQuMDE0aC0xLjMzdjFoMS4zM3YtMXptMy45OTcgMEg2LjY2MnYxaDEuMzI5di0xeiIvPjwvc3ZnPg==);
       background-color: #ff9b25;
       mask-repeat: no-repeat;
       mask-size: 100% 100%;

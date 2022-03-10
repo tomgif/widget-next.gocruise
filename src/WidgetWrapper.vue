@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import {useFetchApi} from './resources/fetch-api'
+import {useFetchOptions} from './resources/fetch-options'
 import {reactive} from 'vue'
 
-const {/*loading,*/ data: options} = await useFetchApi()
+const {/*loading,*/ data: options} = await useFetchOptions()
 const state = reactive({
   options
 })

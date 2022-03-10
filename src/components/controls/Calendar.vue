@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import {defineProps, withDefaults, ref, computed, onMounted, unref, defineEmits, watch} from 'vue'
+import {defineProps, withDefaults, onMounted, unref, defineEmits, watch} from 'vue'
+import {$ref, $computed} from 'vue/macros'
 
 const props = withDefaults(defineProps<{
   modelValue: Date,
@@ -37,7 +38,7 @@ const stripTime = (date: Date): Date => {
 const setMonth = (offset = 1): void => {
   const date = unref(currentDate) as Date
   date.setMonth(date.getMonth() + offset)
-  currentDate.value = new Date(date)
+  currentDate = new Date(date)
 }
 
 type CalendarDay = {
@@ -83,26 +84,26 @@ onMounted(() => {
     throw new Error('"weekendIndices" in props can\'t be greater than number of days in a week')
 })
 
-const startDate = computed<Date>(() => {
+let startDate = $computed<Date>(() => {
   return stripTime(props.startDate || props.modelValue || new Date)
 })
 
-const currentDate = ref<Date>(startDate.value)
-const currentMonthName = computed<string>(() => {
-  return props.monthsNames[currentDate.value.getMonth()]
+let currentDate = $ref<Date>(startDate)
+let currentMonthName = $computed<string>(() => {
+  return props.monthsNames[currentDate.getMonth()]
 })
 
 watch((): Date => props.modelValue, (fresh: Date): void => {
-  currentDate.value = new Date(fresh)
+  currentDate = new Date(fresh)
 })
 
-const events = computed<Array<number>>(() => {
+let events = $computed<Array<number>>(() => {
   return props.events.map((date: Date) => {
     return +stripTime(date)
   })
 })
 
-const selected = computed<Date | false>(() => {
+let selected = $computed<Date | false>(() => {
   return props.modelValue ? stripTime(props.modelValue) : false
 })
 
@@ -111,8 +112,8 @@ if (props.startDay) {
   weekDays = [...weekDays.slice(props.startDay), ...weekDays.slice(0, props.startDay)]
 }
 
-const days = computed(() => {
-  let firstDay = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth())
+let days = $computed((): Array<CalendarDay> => {
+  let firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth())
   const offset = firstDay.getDay() - props.startDay
   const preceding = offset < 0 ? 7 : 0
 
@@ -128,7 +129,7 @@ const days = computed(() => {
   for (let i = 1; i <= totalSquares; i++) {
     let weekday = (i - 1) % 7
     const index = i - (offset >= 0 ? offset : (7 + offset))
-    const date = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth(), index)
+    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), index)
     const outside = index < 1 || index > totalDays
     const disabled = (props.minDate && +date < +props.minDate) || (props.maxDate && +date > +props.maxDate) || false
 
@@ -136,10 +137,10 @@ const days = computed(() => {
       date, disabled, outside, weekday,
       title: date.getDate().toString(),
       weekend: props.weekendIndices.includes(weekday),
-      event: events.value.includes(+date),
+      event: events.includes(+date),
       empty: outside && !props.showAllDates,
       current: +stripTime(new Date) === +date,
-      selected: selected.value ? +selected.value === +date : false
+      selected: selected ? +selected === +date : false
     })
   }
   return squares
@@ -151,7 +152,9 @@ const onClick = (day: CalendarDay): void => {
   }
 }
 
-const hasPrev = computed(() => currentDate.value.getMonth() !== props.minDate?.getMonth())
+let hasPrev = $computed<boolean>(() => {
+  return currentDate.getMonth() !== props.minDate?.getMonth()
+})
 </script>
 
 <template>
@@ -185,6 +188,7 @@ const hasPrev = computed(() => currentDate.value.getMonth() !== props.minDate?.g
 
 <style lang="scss">
 .calendar {
+  border-radius: 2px;
   position: relative;
   font-family: sans-serif;
   color: black;
@@ -264,7 +268,7 @@ const hasPrev = computed(() => currentDate.value.getMonth() !== props.minDate?.g
 
         &:before {
           content: '';
-          mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xml:space='preserve' viewBox='0 0 512 512'%3E%3Cpath d='M352 128.4 319.7 96 160 256l159.7 160 32.3-32.4L224.7 256z'/%3E%3C/svg%3E");
+          mask-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbDpzcGFjZT0icHJlc2VydmUiIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBkPSJNMzUyIDEyOC40IDMxOS43IDk2IDE2MCAyNTZsMTU5LjcgMTYwIDMyLjMtMzIuNEwyMjQuNyAyNTZ6Ii8+PC9zdmc+);
         }
       }
 
@@ -273,7 +277,7 @@ const hasPrev = computed(() => currentDate.value.getMonth() !== props.minDate?.g
 
         &:before {
           content: '';
-          mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xml:space='preserve' viewBox='0 0 512 512'%3E%3Cpath d='M160 128.4 192.3 96 352 256 192.3 416 160 383.6 287.3 256z'/%3E%3C/svg%3E");
+          mask-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbDpzcGFjZT0icHJlc2VydmUiIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBkPSJNMTYwIDEyOC40IDE5Mi4zIDk2IDM1MiAyNTYgMTkyLjMgNDE2IDE2MCAzODMuNiAyODcuMyAyNTZ6Ii8+PC9zdmc+);
         }
       }
     }
@@ -308,7 +312,7 @@ const hasPrev = computed(() => currentDate.value.getMonth() !== props.minDate?.g
       }
     }
 
-    &_active {
+    &_active:not(&_empty) {
       background-color: #2e2e2e;
       color: #fff;
     }

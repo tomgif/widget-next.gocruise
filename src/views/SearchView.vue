@@ -1,71 +1,65 @@
 <script lang="ts" setup>
-import {computed, defineProps, reactive} from 'vue'
-import dayjs from 'dayjs'
-import customParseFormat from 'dayjs/plugin/customParseFormat'
-import * as Control from '../components/controls'
-
 /**
- * TODO: .add(3, month)
+ * TODO:
+ * 1) make controls' labels as css content property
+ * 2) props type
  */
-
-dayjs.extend(customParseFormat)
+import {defineProps, unref, watch} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import * as Control from '../components/controls'
+import CruiseCard from '../components/CruiseCard.vue'
+import orderBy from 'lodash/orderBy'
+import {useState} from '@/resources/state'
+import {useFetchResult} from '@/resources/fetch-results'
+import {FilterFunc, OptionItem} from '@/types'
+import {$computed} from 'vue/macros'
+import groupBy from 'lodash/groupBy'
+import mapValues from 'lodash/mapValues'
+import omit from 'lodash/omit'
 
 const props = defineProps({
   options: Object
 })
 
-const format = process.env.VUE_APP_DATE_FORMAT
-const dateFromInit = dayjs().format(format)
-const dateTillInit = dayjs().add(2, 'weeks').format(format)
+const router = useRouter()
+const route = useRoute()
+const {
+  state,
+  rus,
+  available,
+  minDates,
+  dateFrom,
+  dateTill
+} = useState()
+const {loading, fetchResult, result} = await useFetchResult()
 
-const state = reactive({
-  flightFrom: 0,
-  type: 1,
-  regions: [],
-  departurePorts: [],
-  ships: [],
-  fares: [],
-  rus: false,
-  available: true,
-  dateFrom: dateFromInit,
-  dateTill: dateTillInit,
-  minLength: null,
-  maxLength: null
-})
-
-const date = new Date()
-const minDates = reactive({
-  from: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
-  till: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
-})
-
-const dateFrom = computed({
-  get: (): string => state.dateFrom,
-  set: (dateString: string) => {
-    const {dateFrom, dateTill} = state, dateObject = dayjs(dateString)
-    let newDateFrom = dateFrom
-    if (dateObject.isValid()) {
-      newDateFrom = dateObject.format(format)
-      if (dateObject.isAfter(dayjs(dateTill, format))) {
-        state.dateTill = dateObject.add(2, 'week').format(format)
-      }
-    }
-    minDates.till = dateObject.toDate()
-    state.dateFrom = newDateFrom
-  }
-})
-
-const dateTill = computed({
-  get: (): string => state.dateTill,
-  set: value => {
-    let date = dayjs(value)
-    state.dateTill = date.isValid() ? date.format(format) : state.dateTill
-  }
-})
-
-const onSubmit = (event: Event) => {
+const onSubmit = (event: Event): void => {
   event.preventDefault()
-  alert('submitted!')
+  router.push({
+    query: {...state}
+  })
+}
+
+watch(() => route.query, () => {
+  //loading
+  fetchResult(state)
+})
+
+let cruises = $computed(() => {
+  return mapValues(
+      groupBy(unref(result), 'grouping'),
+      list => list.map(cruise => omit(cruise, 'grouping'))
+  )
+})
+
+const filter: FilterFunc = (options, filter = [], order = ['title']) => {
+  let output = orderBy(options, order, ['asc'])
+  if (filter.length) {
+    return options.filter((option: OptionItem): boolean => {
+      return filter.indexOf(option.id) !== -1
+    })
+  }
+  return output
 }
 </script>
 
@@ -74,47 +68,47 @@ const onSubmit = (event: Event) => {
     <form @submit="onSubmit">
       <div class="search-form">
         <div class="search-filter">
-          <Control.Switch v-model="state.rus">
+          <Control.Switch v-model="rus">
             <template #label>Русскоязычная группа</template>
           </Control.Switch>
 
-          <Control.Switch v-model="state.available">
+          <Control.Switch v-model="available">
             <template #label>Наличие кают</template>
           </Control.Switch>
 
           <Control.Select v-model="state.flightFrom"
-                          :options="props.options.cities"
+                          :options="filter(props.options.cities, [])"
                           :default-value="0"
                           default-value-label="Без перелёта">
             <template #label>Город вылета</template>
           </Control.Select>
 
           <Control.Select v-model="state.fares"
-                          :options="props.options.fares"
+                          :options="filter(props.options.fares, [])"
                           default-value-label="Все тарифы">
             <template #label>Тип тарифа</template>
           </Control.Select>
 
           <Control.Select v-model="state.type"
-                          :options="props.options.types"
+                          :options="filter(props.options.types, [])"
                           default-value-label="Все типы">
             <template #label>Тип круиза</template>
           </Control.Select>
 
           <Control.Select v-model="state.regions"
-                          :options="props.options.regions"
+                          :options="filter(props.options.regions, [])"
                           default-value-label="Все регионы">
             <template #label>Регионы плавания</template>
           </Control.Select>
 
           <Control.Select v-model="state.departurePorts"
-                          :options="props.options.cities"
+                          :options="filter(props.options.cities, [])"
                           default-value-label="Все порты">
             <template #label>Порты отправления</template>
           </Control.Select>
 
           <Control.Select v-model="state.ships"
-                          :options="props.options.ships"
+                          :options="filter(props.options.ships, [])"
                           default-value-label="Все лайнеры">
             <template #label>Лайнеры</template>
           </Control.Select>
@@ -138,7 +132,16 @@ const onSubmit = (event: Event) => {
         </div>
       </div>
     </form>
-    <div>result</div>
+    <div class="search-result">
+      <div v-if="!loading && !!result">
+        <div class="search-result__title"></div>
+        <div class="search-result__list">
+          <cruise-card v-for="(cruise, key) in cruises" :key="key" :cruise="cruise"></cruise-card>
+        </div>
+      </div>
+      <div class="search-result__title search-result__title_not-found"
+           v-if="!loading && !result"></div>
+    </div>
   </div>
 </template>
 
@@ -159,5 +162,28 @@ const onSubmit = (event: Event) => {
   width: 186px;
   margin-left: 21px;
   margin-bottom: 14px;
+}
+
+.search-result {
+  &__title {
+    margin: 4px 0;
+    font-weight: 400;
+    font-size: 24px;
+    line-height: 36px;
+    color: #000;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    padding: 16px 0;
+
+    &:before {
+      content: 'Результаты поиска'
+    }
+
+    &_not-found {
+      &:before {
+        content: 'По вашему запросу ничего не найдено'
+      }
+    }
+  }
 }
 </style>
