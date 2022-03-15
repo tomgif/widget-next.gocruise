@@ -7,7 +7,7 @@ import {SearchState} from '@/types/state'
 export const useState = () => {
   const format = process.env.VUE_APP_DATE_FORMAT
   const dateFromInit = dayjs().format(format)
-  const dateTillInit = dayjs().add(3, 'month').format(format)
+  const dateTillInit = dayjs().add(1, 'month').format(format)
   
   const initialState: SearchState = {
     adults: 2,
@@ -58,7 +58,7 @@ export const useState = () => {
       if (dateObject.isValid()) {
         newDateFrom = dateObject.format(format)
         if (dateObject.isAfter(dayjs(dateTill, format))) {
-          state.dateTill = dateObject.add(3, 'month').format(format)
+          state.dateTill = dateObject.add(1, 'month').format(format)
         }
       }
       minDates.till = dateObject.toDate()

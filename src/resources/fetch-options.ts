@@ -1,9 +1,10 @@
-import {computed, reactive, ref} from 'vue'
+import {computed, ref} from 'vue'
 import {ResultCollection} from '@/resources/http'
 import keyBy from 'lodash/keyBy'
 import {useFetchApi as fetchApi} from '@/resources/fetch-api'
+import {OptionsCollection} from "@/types";
 
-export const useFetchOptions = async () => {
+export const useFetchOptions = () => {
   const REQUEST_IN_PROGRESS = 'REQUEST_IN_PROGRESS'
   const REQUEST_ERROR = 'REQUEST_ERROR'
   const REQUEST_SUCCESS = 'REQUEST_SUCCESS'
@@ -11,35 +12,39 @@ export const useFetchOptions = async () => {
   const loading = computed<boolean>(() => requestState.value === REQUEST_IN_PROGRESS)
   const error = computed<boolean>(() => requestState.value === REQUEST_ERROR)
 
-  const options = [
-    await fetchApi({action: 'ships.list', params: 'exclude[*][]=id&exclude[*][]=title'}),
-    await fetchApi({action: 'regions.list', params: 'exclude[*][]=id&exclude[*][]=title'}),
-    await fetchApi({action: 'cities.list', params: 'exclude[*][]=id&exclude[*][]=title'}),
-    await fetchApi({action: 'cruiseTypes.list', params: 'exclude[*][]=id&exclude[*][]=title'}),
-    await fetchApi({action: 'fares.list', params: 'exclude[*][]=id&exclude[*][]=title'})
-  ]
+  const data: OptionsCollection = {}
 
-  requestState.value = REQUEST_IN_PROGRESS
+  const fetchOptions = async () => {
+    let response: Array<ResultCollection> = []
 
-  let response: Array<ResultCollection> = []
+    const options = [
+      await fetchApi({action: 'ships.list', params: 'exclude[*][]=id&exclude[*][]=title'}),
+      await fetchApi({action: 'regions.list', params: 'exclude[*][]=id&exclude[*][]=title'}),
+      await fetchApi({action: 'cities.list', params: 'exclude[*][]=id&exclude[*][]=title'}),
+      await fetchApi({action: 'cruiseTypes.list', params: 'exclude[*][]=id&exclude[*][]=title'}),
+      await fetchApi({action: 'fares.list', params: 'exclude[*][]=id&exclude[*][]=title'})
+    ]
 
-  try {
-    response = await Promise.all(options).then(response => {
-      requestState.value = REQUEST_SUCCESS
-      return response
-    })
-  } catch (e) {
-    requestState.value = REQUEST_ERROR
+    requestState.value = REQUEST_IN_PROGRESS
+
+    try {
+      response = await Promise.all(options).then(response => {
+        requestState.value = REQUEST_SUCCESS
+        return response
+      })
+
+      const [ships, regions, cities, types, fares] = response
+
+      data.ships = keyBy(ships, 'id')
+      data.regions = keyBy(regions, 'id')
+      data.cities = keyBy(cities, 'id')
+      data.types = keyBy(types, 'id')
+      data.fares = keyBy(fares, 'id')
+
+    } catch (e) {
+      requestState.value = REQUEST_ERROR
+    }
   }
 
-  const [ships, regions, cities, types, fares] = response
-  const data = reactive({
-    ships: keyBy(ships, 'id'),
-    regions: keyBy(regions, 'id'),
-    cities: keyBy(cities, 'id'),
-    types: keyBy(types, 'id'),
-    fares: keyBy(fares, 'id'),
-  })
-
-  return {loading, error, data}
+  return {loading, error, fetchOptions, data}
 }

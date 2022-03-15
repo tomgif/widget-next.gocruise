@@ -92,6 +92,4 @@ export interface CruiseBase {
   visaInfo: VisaInfo
 }
 
-export type GroupedCruise = {
-  [key: string]: Array<CruiseBase>
-}
+export type GroupedCruise = Array<CruiseBase>

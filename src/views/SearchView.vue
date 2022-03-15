@@ -2,7 +2,6 @@
 /**
  * TODO:
  * 1) make controls' labels as css content property
- * 2) props type
  */
 import {defineProps, unref, watch} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
@@ -11,38 +10,35 @@ import CruiseCard from '../components/CruiseCard.vue'
 import orderBy from 'lodash/orderBy'
 import {useState} from '@/resources/state'
 import {useFetchResult} from '@/resources/fetch-results'
-import {FilterFunc, OptionItem} from '@/types'
+import {useStringHelper} from '@/resources/string-helper'
+import {FilterFunc, OptionItem, OptionsCollection} from '@/types'
 import {$computed} from 'vue/macros'
 import groupBy from 'lodash/groupBy'
 import mapValues from 'lodash/mapValues'
 import omit from 'lodash/omit'
 
-const props = defineProps({
-  options: Object
-})
+const props = defineProps<{
+  options: OptionsCollection
+}>()
 
 const router = useRouter()
 const route = useRoute()
-const {
-  state,
-  rus,
-  available,
-  minDates,
-  dateFrom,
-  dateTill
-} = useState()
-const {loading, fetchResult, result} = await useFetchResult()
+const {state, rus, available, minDates, dateFrom, dateTill} = useState()
+const {loading, fetchResult, data: result} = useFetchResult()
+const {createCountFormatter} = useStringHelper()
 
 const onSubmit = (event: Event): void => {
   event.preventDefault()
   router.push({
-    query: {...state}
+    query: {
+      ...state,
+      t: +(new Date)
+    }
   })
 }
 
-watch(() => route.query, () => {
-  //loading
-  fetchResult(state)
+watch(() => route.query, async () => {
+  await fetchResult(state)
 })
 
 let cruises = $computed(() => {
@@ -53,14 +49,21 @@ let cruises = $computed(() => {
 })
 
 const filter: FilterFunc = (options, filter = [], order = ['title']) => {
-  let output = orderBy(options, order, ['asc'])
+  let output: Array<OptionItem> = orderBy(options, order, ['asc'])
   if (filter.length) {
-    return options.filter((option: OptionItem): boolean => {
+    return output.filter((option: OptionItem): boolean => {
       return filter.indexOf(option.id) !== -1
     })
   }
   return output
 }
+
+//offers
+const formatOffersCount = createCountFormatter({
+  few: 'предложений',
+  one: 'предложение',
+  two: 'предложения'
+})
 </script>
 
 <template>
@@ -135,8 +138,21 @@ const filter: FilterFunc = (options, filter = [], order = ['title']) => {
     <div class="search-result">
       <div v-if="!loading && !!result">
         <div class="search-result__title"></div>
+        <div class="search-result__tools">
+          <div class="search-result__row">
+            Найдено: <span v-text="result.length"></span> <span v-text="formatOffersCount(result.length)"></span>
+          </div>
+          <div class="search-result__row">
+            Сортировать по <span>Дате</span> <span>Цене</span>
+
+            Кратко Подробно
+          </div>
+        </div>
         <div class="search-result__list">
-          <cruise-card v-for="(cruise, key) in cruises" :key="key" :cruise="cruise"></cruise-card>
+          <cruise-card v-for="(cruise, key) in cruises"
+                       :key="key"
+                       :cruise="cruise"
+                       :options="options"></cruise-card>
         </div>
       </div>
       <div class="search-result__title search-result__title_not-found"
@@ -184,6 +200,13 @@ const filter: FilterFunc = (options, filter = [], order = ['title']) => {
         content: 'По вашему запросу ничего не найдено'
       }
     }
+  }
+
+  &__row {
+    height: 43px;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+    line-height: 14px;
   }
 }
 </style>

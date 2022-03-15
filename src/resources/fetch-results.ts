@@ -4,7 +4,7 @@ import {ResultItem} from '@/resources/http'
 import {SearchState} from '@/types/state'
 import * as queryString from 'query-string'
 
-export const useFetchResult = async () => {
+export const useFetchResult = () => {
   const REQUEST_IN_PROGRESS = 'REQUEST_IN_PROGRESS'
   const REQUEST_ERROR = 'REQUEST_ERROR'
   const REQUEST_SUCCESS = 'REQUEST_SUCCESS'
@@ -14,13 +14,15 @@ export const useFetchResult = async () => {
 
   requestState.value = REQUEST_IN_PROGRESS
 
-  const result = ref<Array<ResultItem>| null>(null)
+  const data = ref<Array<ResultItem>>([])
 
   const fetchResult = async (params: SearchState) => {
-    result.value = null
+    //data = null
+
     requestState.value = REQUEST_IN_PROGRESS
+
     try {
-      result.value = await fetchApi({
+      data.value = await fetchApi({
         action: 'cruises.find',
         params: queryString.stringify(params, {
           arrayFormat: 'bracket',
@@ -35,5 +37,5 @@ export const useFetchResult = async () => {
     }
   }
 
-  return {loading, error, fetchResult, result}
+  return {loading, error, fetchResult, data}
 }
